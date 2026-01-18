@@ -239,6 +239,15 @@ def setup_sample_docs():
 
 # main app starts here
 def main():
+     # ✅ Initialize session state (MUST be first)
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+
+    if "bot" not in st.session_state:
+        st.session_state.bot = None
+
+    if "is_ready" not in st.session_state:
+        st.session_state.is_ready = False
     st.set_page_config(
         page_title="Sustainability Chatbot",
         page_icon="🌍",
