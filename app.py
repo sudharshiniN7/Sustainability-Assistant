@@ -257,12 +257,12 @@ def main():
     with st.sidebar:
         st.header("📚 Document Manager")
         
-        # check if docs exist
+        # check if knowledge file exists
         if not os.path.exists(DOCS_FILE):
-            st.warning("No documents found!")
-            if st.button("Create Sample Documents"):
+            st.warning("No knowledge base found!")
+            if st.button("Create Sample Knowledge Base"):
                 setup_sample_docs()
-                st.success("Sample documents created!")
+                st.success("Sample knowledge base created!")
                 st.rerun()
         
         # let user upload their own file
@@ -311,7 +311,13 @@ def main():
         st.markdown("---")
         st.markdown("**💬 Chat History**")
         
-        if st.session_state.chat_history and len(st.session_state.chat_history) > 0:
+        # Safely check chat history
+        try:
+            has_history = 'chat_history' in st.session_state and st.session_state.chat_history and len(st.session_state.chat_history) > 0
+        except:
+            has_history = False
+        
+        if has_history:
             st.markdown(f"*{len(st.session_state.chat_history)} conversations*")
             
             # Show last 5 chats
