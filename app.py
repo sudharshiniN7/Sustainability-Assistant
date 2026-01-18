@@ -1,4 +1,3 @@
-# UI update - app name changed
 """
 ECOBOT - Sustainability Learning Chatbot
 Made by: Sudharshini N
@@ -256,11 +255,7 @@ def main():
     
     # sidebar stuff
     with st.sidebar:
-        st.markdown("""
-            <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px; border-radius: 10px; margin-bottom: 20px;'>
-                <h2 style='color: white; text-align: center; margin: 0;'>📚 Document Manager</h2>
-            </div>
-        """, unsafe_allow_html=True)
+        st.header("📚 Document Manager")
         
         # check if docs exist
         if not os.path.exists(DOCS_FILE):
@@ -305,33 +300,18 @@ def main():
         # show some stats
         if st.session_state.is_ready:
             st.markdown("---")
+            st.markdown("**📊 Knowledge Base Stats**")
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown("""
-                    <div style='background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 15px; border-radius: 10px; text-align: center;'>
-                        <h3 style='color: white; margin: 0; font-size: 2em;'>{}</h3>
-                        <p style='color: white; margin: 0;'>Text Chunks</p>
-                    </div>
-                """.format(len(st.session_state.bot.text_chunks)), unsafe_allow_html=True)
+                st.metric("Text Chunks", len(st.session_state.bot.text_chunks))
             with col2:
-                st.markdown("""
-                    <div style='background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 15px; border-radius: 10px; text-align: center;'>
-                        <h3 style='color: white; margin: 0; font-size: 2em;'>{}</h3>
-                        <p style='color: white; margin: 0;'>Words</p>
-                    </div>
-                """.format(st.session_state.bot.vectors.shape[1]), unsafe_allow_html=True)
+                st.metric("Vocabulary", st.session_state.bot.vectors.shape[1])
     
     # main section
     left_col, right_col = st.columns([2, 1])
     
     with left_col:
-        st.markdown("""
-            <div style='background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
-                <h2 style='color: #667eea; margin-top: 0;'>💬 Ask Your Question</h2>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
+        st.subheader("💬 Ask Your Question")
         
         user_q = st.text_input(
             "Type your sustainability question here:",
@@ -362,30 +342,17 @@ def main():
                 answer_chunk, match_score = st.session_state.bot.search_answer(user_q)
                 
                 if answer_chunk:
-                    st.markdown("""
-                        <div style='background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); padding: 20px; border-radius: 15px; margin: 20px 0;'>
-                            <h3 style='color: #2d3748; margin-top: 0;'>✅ Found an answer!</h3>
-                        </div>
-                    """, unsafe_allow_html=True)
+                    st.success("✅ Found an answer!")
                     
-                    st.markdown("""
-                        <div style='background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 20px 0;'>
-                            <h3 style='color: #667eea;'>📖 Easy Explanation</h3>
-                        </div>
-                    """, unsafe_allow_html=True)
+                    st.subheader("📖 Easy Explanation")
                     simple_answer = st.session_state.bot.make_simple(answer_chunk)
-                    st.markdown(f"""
-                        <div style='background: #e6f7ff; padding: 20px; border-left: 5px solid #1890ff; border-radius: 10px; font-size: 1.1em; line-height: 1.8;'>
-                            {simple_answer}
-                        </div>
-                    """, unsafe_allow_html=True)
+                    st.info(simple_answer)
                     
-                    st.markdown("<br>", unsafe_allow_html=True)
                     st.progress(float(match_score), text=f"✨ Match Quality: {match_score:.1%}")
                     
                     # let user see original text if they want
                     with st.expander("🔍 See Original Text"):
-                        st.text_area("Original Content", answer_chunk, height=200)
+                        st.text_area("Original Content", answer_chunk, height=200, disabled=True)
                 else:
                     st.warning("⚠️ Couldn't find relevant information. Try asking differently.")
         
@@ -393,57 +360,42 @@ def main():
             st.error("Please process documents first using the button in sidebar")
     
     with right_col:
+        st.subheader("ℹ️ About ECOBOT")
         st.markdown("""
-            <div style='background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
-                <h2 style='color: #667eea; margin-top: 0;'>ℹ️ About ECOBOT</h2>
-                <p style='font-size: 1.05em; line-height: 1.8;'>
-                ECOBOT is your friendly AI assistant that helps you understand sustainability concepts through:
-                </p>
-                <ul style='font-size: 1.05em; line-height: 1.8;'>
-                    <li>📄 Reading sustainability documents</li>
-                    <li>🔍 Finding relevant information</li>
-                    <li>💡 Explaining in simple language</li>
-                    <li>🎓 Making learning easier</li>
-                </ul>
-                
-                <h3 style='color: #764ba2; margin-top: 25px;'>How to use ECOBOT:</h3>
-                <ol style='font-size: 1.05em; line-height: 1.8;'>
-                    <li>Upload documents OR use samples</li>
-                    <li>Click "Process Documents"</li>
-                    <li>Type your question</li>
-                    <li>Get simple explanation</li>
-                </ol>
-                
-                <h3 style='color: #764ba2; margin-top: 25px;'>Why ECOBOT?</h3>
-                <ul style='font-size: 1.05em; line-height: 1.8;'>
-                    <li>✅ Works offline</li>
-                    <li>✅ Completely free</li>
-                    <li>✅ No complex setup</li>
-                    <li>✅ Privacy friendly</li>
-                    <li>✅ Built for students</li>
-                </ul>
-            </div>
-        """, unsafe_allow_html=True)
+        ECOBOT is your friendly AI assistant that helps you understand sustainability concepts.
         
-        st.markdown("<br>", unsafe_allow_html=True)
+        **How ECOBOT helps you:**
+        - 📄 Reads sustainability documents
+        - 🔍 Finds relevant information
+        - 💡 Explains in simple language
+        - 🎓 Makes learning easier
         
-        st.markdown("""
-            <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 15px; color: white;'>
-                <h3 style='color: white; margin-top: 0;'>🎯 Supports UN Goals:</h3>
-                <p style='font-size: 1.1em; line-height: 2;'>
-                    🎓 SDG 4: Quality Education<br>
-                    ⚡ SDG 7: Clean Energy<br>
-                    🌍 SDG 13: Climate Action
-                </p>
-            </div>
-        """, unsafe_allow_html=True)
+        **How to use ECOBOT:**
+        1. Upload documents OR use samples
+        2. Click "Process Documents"
+        3. Type your question
+        4. Get simple explanation
+        
+        **Why ECOBOT?**
+        - ✅ Works offline
+        - ✅ Completely free
+        - ✅ No complex setup
+        - ✅ Privacy friendly
+        - ✅ Built for students
+        """)
+        
+        st.markdown("---")
+        st.markdown("**🎯 Supports UN Goals:**")
+        st.success("🎓 SDG 4: Quality Education")
+        st.info("⚡ SDG 7: Clean Energy")
+        st.warning("🌍 SDG 13: Climate Action")
     
-    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("---")
     st.markdown("""
-        <div style='text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px;'>
-            <p style='color: white; font-size: 1.1em; margin: 0;'>
+        <div style='text-align: center; padding: 15px;'>
+            <p style='color: #888; font-size: 1em;'>
                 🤖 <strong>ECOBOT</strong> - Your AI Sustainability Learning Assistant<br>
-                Made for AI for Sustainability Project | Empowering Students Worldwide 🌍
+                Made for AI for Sustainability Project | Empowering Students 🌍
             </p>
         </div>
     """, unsafe_allow_html=True)
