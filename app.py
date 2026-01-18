@@ -311,7 +311,7 @@ def main():
         st.markdown("---")
         st.markdown("**💬 Chat History**")
         
-        if len(st.session_state.chat_history) > 0:
+        if st.session_state.chat_history and len(st.session_state.chat_history) > 0:
             st.markdown(f"*{len(st.session_state.chat_history)} conversations*")
             
             # Show last 5 chats
