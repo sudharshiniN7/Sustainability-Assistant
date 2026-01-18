@@ -239,15 +239,6 @@ def setup_sample_docs():
 
 # main app starts here
 def main():
-     # ✅ Initialize session state (MUST be first)
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []
-
-    if "bot" not in st.session_state:
-        st.session_state.bot = None
-
-    if "is_ready" not in st.session_state:
-        st.session_state.is_ready = False
     st.set_page_config(
         page_title="Sustainability Chatbot",
         page_icon="🌍",
@@ -281,7 +272,7 @@ def main():
         )
         
         if user_file is not None:
-            file_content = user_file.read().decode('utf-8',error='ignore')
+            file_content = user_file.read().decode('utf-8',errors='ignore')
             with open(DOCS_FILE, 'w', encoding='utf-8') as f:
                 f.write(file_content)
             st.success("File uploaded!")
@@ -399,7 +390,7 @@ def main():
         elif user_q and not st.session_state.is_ready:
             st.error("Please process documents first using the button in sidebar")
     
-    with col2:
+    with main_col2:
         st.subheader("💡 Quick Tips")
         st.markdown("""
         **Example Questions:**
