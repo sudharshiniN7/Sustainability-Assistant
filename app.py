@@ -359,7 +359,7 @@ def main():
             cols = st.columns(2)
             for idx, ex in enumerate(examples):
                 with cols[idx % 2]:
-                    if st.button(f"🔹 {ex}", key=ex, use_container_width=True):
+                    if st.button(f"🔹 {ex}", key=f"btn_{idx}", use_container_width=True):
                         user_q = ex
         
         # answer the question
