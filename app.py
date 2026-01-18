@@ -272,7 +272,7 @@ def main():
         )
         
         if user_file is not None:
-            file_content = user_file.read().decode('utf-8' errors='ignore')
+            file_content = user_file.read().decode('utf-8', errors='ignore')
             with open(DOCS_FILE, 'w', encoding='utf-8') as f:
                 f.write(file_content)
             st.success("File uploaded!")
