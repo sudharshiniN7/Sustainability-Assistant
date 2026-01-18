@@ -88,7 +88,7 @@ class SustainabilityChatbot:
         sent_list = re.split(r'[.!?]+', answer_text)
         sent_list = [s.strip() for s in sent_list if len(s.strip()) > 15]
         
-        # replace difficult words with simple ones (keeping technical terms accurate)
+        # More aggressive simplification
         easy_words = {
             'sustainability': 'environmental health',
             'mitigation': 'reduction',
@@ -104,28 +104,43 @@ class SustainabilityChatbot:
             'sustainable development': 'balanced growth',
             'primarily': 'mainly',
             'subsequently': 'then',
-            'consequently': 'as a result',
+            'consequently': 'so',
             'encompasses': 'includes',
             'utilize': 'use',
-            'implement': 'put in place'
+            'implement': 'put in place',
+            'activities that are responsible for': 'things that cause',
+            'are embedded in': 'are part of',
+            'everyday social practices': 'daily activities',
+            'contribute to': 'add to',
+            'is also of interest to sociologists because': 'sociologists study this because',
+            'result in emissions of': 'create',
+            'heating and cooling our homes': 'using home temperature control'
         }
         
         # replace words
         simple_text = answer_text
-        for hard_word, easy_word in easy_words.items():
-            simple_text = re.sub(r'\b' + hard_word + r'\b', easy_word, simple_text, flags=re.IGNORECASE)
+        for hard_phrase, easy_phrase in easy_words.items():
+            simple_text = re.sub(r'\b' + re.escape(hard_phrase) + r'\b', easy_phrase, simple_text, flags=re.IGNORECASE)
         
-        # rebuild sentences and keep ONLY the 2 most relevant
+        # Remove overly complex sentences - keep ONLY simple, direct ones
         simple_sentences = re.split(r'[.!?]+', simple_text)
         simple_sentences = [s.strip() for s in simple_sentences if len(s.strip()) > 15]
         
-        # take only first 2 sentences for concise answer
-        if len(simple_sentences) >= 2:
-            final_answer = simple_sentences[0] + '. ' + simple_sentences[1] + '.'
-        elif len(simple_sentences) == 1:
-            final_answer = simple_sentences[0] + '.'
+        # Filter to keep only the most understandable sentences
+        clear_sentences = []
+        for sentence in simple_sentences:
+            # Skip sentences that are still too complex
+            if len(sentence.split()) < 25 and 'sociologist' not in sentence.lower():
+                clear_sentences.append(sentence)
+        
+        # Take only first 2 clear sentences
+        if len(clear_sentences) >= 2:
+            final_answer = clear_sentences[0] + '. ' + clear_sentences[1] + '.'
+        elif len(clear_sentences) == 1:
+            final_answer = clear_sentences[0] + '.'
         else:
-            final_answer = simple_text
+            # Fallback: just take first sentence from original
+            final_answer = sent_list[0] + '.' if sent_list else "I found information but it's too complex. Try asking differently."
         
         # clean up
         final_answer = re.sub(r'\s+', ' ', final_answer)
@@ -156,31 +171,67 @@ class SustainabilityChatbot:
             return False
 
 def setup_sample_docs():
-    # creates example sustainability content
+    # creates example sustainability content (student-friendly version)
     example_docs = """
-    Climate Change and Global Warming
-    Climate change refers to long-term shifts in global temperatures and weather patterns. While climate change is natural, human activities have been the main driver since the 1800s, primarily due to the burning of fossil fuels like coal, oil and gas. Greenhouse gases produced by burning fossil fuels act like a blanket around Earth, trapping heat and raising temperatures. Carbon dioxide and methane are the main greenhouse gases responsible for global warming.
+    What is Climate Change?
+    Climate change means long-term changes in Earth's temperature and weather. The planet is getting warmer because humans burn coal, oil, and gas. These fuels release gases that trap heat. This causes problems like melting ice, rising seas, and extreme weather.
     
-    Renewable Energy Sources
-    Renewable energy comes from natural sources that are constantly replenished. Solar energy is captured using photovoltaic panels that convert sunlight into electricity. Wind energy uses turbines to generate power from moving air. Hydroelectric power harnesses the energy of flowing water. These clean energy sources produce little to no greenhouse gases and help reduce our carbon footprint.
+    What is Global Warming?
+    Global warming is the increase in Earth's temperature. It is caused mainly by greenhouse gases from human activities. Carbon dioxide from burning fossil fuels is the biggest cause. Global warming leads to climate change.
     
-    Sustainable Development Goals
-    The United Nations created 17 Sustainable Development Goals (SDGs) to achieve a better future for all. SDG 4 focuses on Quality Education, ensuring inclusive and equitable quality education for all. SDG 7 aims for Affordable and Clean Energy, ensuring access to affordable, reliable, sustainable and modern energy. SDG 13 addresses Climate Action, taking urgent action to combat climate change and its impacts.
+    Renewable Energy
+    Renewable energy comes from natural sources that never run out. Solar panels turn sunlight into electricity. Wind turbines use moving air to make power. Water flowing in rivers creates hydroelectric energy. These clean sources don't pollute like coal and oil do.
     
-    Biodiversity and Ecosystems
-    Biodiversity refers to the variety of life forms on Earth, including different species of plants, animals, and microorganisms. Healthy ecosystems provide essential services like clean air, water purification, pollination of crops, and climate regulation. Deforestation and habitat destruction are major threats to biodiversity, causing species extinction and ecosystem collapse.
+    Solar Energy
+    Solar energy uses the sun's light to make electricity. Solar panels on roofs capture sunlight. This energy is clean and free. Many homes and businesses now use solar power to reduce electricity bills and help the environment.
     
-    Carbon Footprint and Mitigation
-    A carbon footprint is the total amount of greenhouse gases produced by human activities. Reducing our carbon footprint involves using renewable energy, improving energy efficiency, reducing waste, and changing consumption patterns. Mitigation strategies include planting trees, developing clean technologies, and transitioning away from fossil fuels.
+    Wind Energy
+    Wind energy uses large turbines with blades that spin in the wind. As they spin, they generate electricity. Wind farms can power thousands of homes. Wind energy is clean and renewable.
+    
+    Sustainable Development Goals (SDGs)
+    The United Nations created 17 goals for a better world by 2030. SDG 4 is Quality Education for everyone. SDG 7 is Clean Energy that everyone can afford. SDG 13 is Climate Action to fight global warming. These goals help make the world better.
+    
+    What is Biodiversity?
+    Biodiversity means all the different plants, animals, and living things on Earth. Healthy biodiversity keeps nature balanced. When forests are cut down or oceans are polluted, many species die. We need biodiversity for clean air, water, and food.
+    
+    Ecosystems
+    An ecosystem is a place where plants, animals, and nature work together. Forests, oceans, and deserts are ecosystems. Healthy ecosystems clean our air and water. They give us food and protect us from disasters.
+    
+    What is Carbon Footprint?
+    Your carbon footprint is how much CO2 you create. Driving cars, using electricity, and buying products all add to it. You can reduce your carbon footprint by walking, biking, using less energy, and recycling.
+    
+    How to Reduce Carbon Footprint
+    Use less electricity at home. Walk or bike instead of driving. Eat less meat. Recycle and reuse things. Plant trees. Buy local products. These small actions help fight climate change.
+    
+    Greenhouse Gases
+    Greenhouse gases trap heat in Earth's atmosphere like a blanket. Carbon dioxide, methane, and nitrous oxide are the main ones. They come from burning fuels, farming, and waste. Too much greenhouse gas causes global warming.
+    
+    What is Deforestation?
+    Deforestation means cutting down forests. Trees are removed for farming, wood, or building. This is bad because trees absorb CO2 and give us oxygen. Less trees means more CO2 and climate change.
+    
+    Fossil Fuels
+    Fossil fuels are coal, oil, and natural gas. They formed from dead plants and animals millions of years ago. Burning them gives energy but releases CO2. This causes pollution and global warming.
     
     Circular Economy
-    A circular economy aims to eliminate waste by keeping products and materials in use for as long as possible. This contrasts with the traditional linear economy of take-make-dispose. Circular economy principles include designing for durability, repairing and refurbishing products, recycling materials, and reducing single-use items.
+    A circular economy means reusing and recycling everything. Instead of making, using, and throwing away, we repair and reuse. This reduces waste and saves resources. It's better for the planet.
     
     Water Conservation
-    Freshwater is a limited resource essential for life. Water conservation involves using water efficiently and reducing unnecessary consumption. Strategies include fixing leaks, using water-efficient appliances, collecting rainwater, and protecting watersheds from pollution. Climate change is affecting water availability in many regions.
+    Water conservation means using water wisely. Fix leaky taps. Take shorter showers. Don't waste water. Many places face water shortages. Saving water helps everyone and protects nature.
+    
+    Why is Water Important?
+    Water is essential for life. We need it to drink, grow food, and stay clean. Only 3% of Earth's water is fresh. Climate change is making water scarce in many places. We must protect and save water.
     
     Sustainable Agriculture
-    Sustainable agriculture produces food while protecting the environment and supporting local communities. Practices include crop rotation, organic farming, reducing pesticide use, conserving water, and maintaining soil health. Sustainable agriculture helps ensure food security while minimizing environmental impact.
+    Sustainable farming grows food without harming the environment. Farmers use less pesticides, save water, and protect soil. They rotate crops and use natural methods. This keeps land healthy for future generations.
+    
+    Why Plant Trees?
+    Trees absorb CO2 and give oxygen. They provide shade, prevent floods, and give homes to animals. Planting trees fights climate change. One tree can remove tons of CO2 over its lifetime.
+    
+    What is Recycling?
+    Recycling turns old items into new ones. Plastic bottles become new containers. Paper becomes new paper. Recycling saves energy, reduces waste, and protects nature.
+    
+    What are SDGs?
+    SDGs are 17 Sustainable Development Goals by the UN. They aim to end poverty, protect the planet, and ensure peace by 2030. Goal 13 is about climate action. Goal 7 is clean energy. Goal 4 is quality education.
     """
     
     with open(DOCS_FILE, 'w', encoding='utf-8') as f:
@@ -221,7 +272,7 @@ def main():
         )
         
         if user_file is not None:
-            file_content = user_file.read().decode('utf-8', errors='ignore')
+            file_content = user_file.read().decode('utf-8' errors='ignore')
             with open(DOCS_FILE, 'w', encoding='utf-8') as f:
                 f.write(file_content)
             st.success("File uploaded!")
