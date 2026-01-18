@@ -306,6 +306,26 @@ def main():
                 st.metric("Text Chunks", len(st.session_state.bot.text_chunks))
             with col2:
                 st.metric("Vocabulary", st.session_state.bot.vectors.shape[1])
+        
+        # Chat History Section
+        st.markdown("---")
+        st.markdown("**💬 Chat History**")
+        
+        if len(st.session_state.chat_history) > 0:
+            st.markdown(f"*{len(st.session_state.chat_history)} conversations*")
+            
+            # Show last 5 chats
+            for idx, chat in enumerate(reversed(st.session_state.chat_history[-5:])):
+                with st.expander(f"💭 {chat['question'][:40]}...", expanded=False):
+                    st.markdown(f"**Q:** {chat['question']}")
+                    st.info(chat['answer'])
+                    st.caption(f"Match: {chat['score']:.1%}")
+            
+            if st.button("🗑️ Clear History", use_container_width=True):
+                st.session_state.chat_history = []
+                st.rerun()
+        else:
+            st.info("No chat history yet. Ask a question to start!")
     
     # main section
     left_col, right_col = st.columns([2, 1])
@@ -350,6 +370,17 @@ def main():
                     
                     st.progress(float(match_score), text=f"✨ Match Quality: {match_score:.1%}")
                     
+                    # Save to chat history
+                    chat_entry = {
+                        'question': user_q,
+                        'answer': simple_answer,
+                        'score': match_score
+                    }
+                    
+                    # Avoid duplicate entries
+                    if not st.session_state.chat_history or st.session_state.chat_history[-1]['question'] != user_q:
+                        st.session_state.chat_history.append(chat_entry)
+                    
                     # let user see original text if they want
                     with st.expander("🔍 See Original Text"):
                         st.text_area("Original Content", answer_chunk, height=200, disabled=True)
@@ -359,43 +390,70 @@ def main():
         elif user_q and not st.session_state.is_ready:
             st.error("Please process documents first using the button in sidebar")
     
-    with right_col:
-        st.subheader("ℹ️ About ECOBOT")
+    with col2:
+        st.subheader("💡 Quick Tips")
         st.markdown("""
-        ECOBOT is your friendly AI assistant that helps you understand sustainability concepts.
+        **Example Questions:**
+        - What is climate change?
+        - How does solar energy work?
+        - What are SDGs?
+        - Why plant trees?
+        - How to reduce carbon footprint?
         
-        **How ECOBOT helps you:**
-        - 📄 Reads sustainability documents
-        - 🔍 Finds relevant information
-        - 💡 Explains in simple language
-        - 🎓 Makes learning easier
-        
-        **How to use ECOBOT:**
-        1. Upload documents OR use samples
-        2. Click "Process Documents"
-        3. Type your question
-        4. Get simple explanation
-        
-        **Why ECOBOT?**
-        - ✅ Works offline
-        - ✅ Completely free
-        - ✅ No complex setup
-        - ✅ Privacy friendly
-        - ✅ Built for students
+        **Tips for best results:**
+        - Ask one question at a time
+        - Be specific
+        - Use simple language
+        - Topics must be in documents
         """)
+    
+    # About Section at Bottom
+    st.markdown("---")
+    st.markdown("## ℹ️ About ECOBOT")
+    
+    about_col1, about_col2, about_col3 = st.columns(3)
+    
+    with about_col1:
+        st.markdown("""
+        **🤖 What is ECOBOT?**
         
-        st.markdown("---")
-        st.markdown("**🎯 Supports UN Goals:**")
-        st.success("🎓 SDG 4: Quality Education")
-        st.info("⚡ SDG 7: Clean Energy")
-        st.warning("🌍 SDG 13: Climate Action")
+        ECOBOT is an AI-powered chatbot designed to help students and beginners understand sustainability concepts easily.
+        
+        - Uses Natural Language Processing
+        - No paid APIs required
+        - Works completely offline
+        - Privacy-friendly
+        """)
+    
+    with about_col2:
+        st.markdown("""
+        **🌍 Features**
+        
+        - Document-based learning
+        - Simple explanations
+        - Text chunking & TF-IDF
+        - Cosine similarity matching
+        - Chat history tracking
+        - Question examples
+        """)
+    
+    with about_col3:
+        st.markdown("""
+        **🎯 Supports UN SDGs**
+        
+        - 🎓 **SDG 4**: Quality Education
+        - ⚡ **SDG 7**: Clean Energy
+        - 🌍 **SDG 13**: Climate Action
+        
+        Built for AI for Sustainability
+        """)
     
     st.markdown("---")
     st.markdown("""
         <div style='text-align: center; padding: 15px;'>
             <p style='color: #888; font-size: 1em;'>
-                🤖 <strong>ECOBOT</strong> - Your AI Sustainability Learning Assistant<br>
-                Made for AI for Sustainability Project | Empowering Students 🌍
+                🤖 <strong>ECOBOT</strong> v1.0 - Your AI Sustainability Learning Assistant<br>
+                Made for AI for Sustainability Project | Empowering Students Worldwide 🌍
             </p>
         </div>
     """, unsafe_allow_html=True)
