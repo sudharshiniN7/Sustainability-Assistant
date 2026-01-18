@@ -31,15 +31,16 @@ class SustainabilityChatbot:
         except:
             return None
     
-    def split_into_chunks(self, text, size=500, overlap=100):
+    def split_into_chunks(self, text, size=300, overlap=50):
         # break text into smaller pieces that overlap a bit
+        # smaller chunks = more precise answers
         words_list = text.split()
         chunks_list = []
         
         i = 0
         while i < len(words_list):
             chunk_text = ' '.join(words_list[i:i + size])
-            if len(chunk_text.split()) > 50:  # ignore tiny chunks
+            if len(chunk_text.split()) > 30:  # ignore tiny chunks
                 chunks_list.append(chunk_text)
             i += size - overlap
         
@@ -62,7 +63,7 @@ class SustainabilityChatbot:
     def search_answer(self, user_question):
         # finds best matching chunk for the question
         if self.vec is None or self.vectors is None:
-            return None
+            return None, 0
         
         # turn question into vector
         q_vector = self.vec.transform([user_question])
@@ -74,7 +75,8 @@ class SustainabilityChatbot:
         best_idx = np.argmax(scores)
         best_score = scores[0][best_idx]
         
-        if best_score > 0.1:  # only return if good enough match
+        # lowered threshold for better matching
+        if best_score > 0.05:  # more lenient threshold
             return self.text_chunks[best_idx], best_score
         return None, 0
     
@@ -84,37 +86,48 @@ class SustainabilityChatbot:
         
         # break into sentences
         sent_list = re.split(r'[.!?]+', answer_text)
-        sent_list = [s.strip() for s in sent_list if len(s.strip()) > 10]
+        sent_list = [s.strip() for s in sent_list if len(s.strip()) > 15]
         
-        # replace difficult words with simple ones
+        # replace difficult words with simple ones (keeping technical terms accurate)
         easy_words = {
-            'sustainability': 'keeping environment healthy long-term',
-            'mitigation': 'reducing',
-            'anthropogenic': 'caused by humans',
-            'biodiversity': 'different types of plants and animals',
-            'renewable energy': 'energy from sun, wind, water',
-            'greenhouse gases': 'gases that trap heat',
-            'carbon footprint': 'amount of CO2 you produce',
-            'ecosystem': 'environment where plants and animals live',
+            'sustainability': 'environmental health',
+            'mitigation': 'reduction',
+            'anthropogenic': 'human-caused',
+            'biodiversity': 'variety of life',
+            'renewable energy': 'clean energy',
+            'greenhouse gases': 'heat-trapping gases',
+            'carbon footprint': 'CO2 impact',
+            'ecosystem': 'natural environment',
             'photovoltaic': 'solar panels',
-            'fossil fuels': 'coal, oil, natural gas',
-            'deforestation': 'cutting down forests',
-            'climate change': 'Earth getting warmer',
-            'sustainable development': 'growing without harming environment'
+            'fossil fuels': 'coal and oil',
+            'deforestation': 'forest loss',
+            'sustainable development': 'balanced growth',
+            'primarily': 'mainly',
+            'subsequently': 'then',
+            'consequently': 'as a result',
+            'encompasses': 'includes',
+            'utilize': 'use',
+            'implement': 'put in place'
         }
         
         # replace words
-        simple_text = answer_text.lower()
+        simple_text = answer_text
         for hard_word, easy_word in easy_words.items():
-            simple_text = simple_text.replace(hard_word.lower(), easy_word)
+            simple_text = re.sub(r'\b' + hard_word + r'\b', easy_word, simple_text, flags=re.IGNORECASE)
         
-        # rebuild sentences
+        # rebuild sentences and keep ONLY the 2 most relevant
         simple_sentences = re.split(r'[.!?]+', simple_text)
-        simple_sentences = [s.strip().capitalize() for s in simple_sentences if len(s.strip()) > 10]
+        simple_sentences = [s.strip() for s in simple_sentences if len(s.strip()) > 15]
         
-        # keep only important sentences
-        final_answer = '. '.join(simple_sentences[:4]) + '.'
+        # take only first 2 sentences for concise answer
+        if len(simple_sentences) >= 2:
+            final_answer = simple_sentences[0] + '. ' + simple_sentences[1] + '.'
+        elif len(simple_sentences) == 1:
+            final_answer = simple_sentences[0] + '.'
+        else:
+            final_answer = simple_text
         
+        # clean up
         final_answer = re.sub(r'\s+', ' ', final_answer)
         final_answer = final_answer.replace('..', '.')
         
@@ -208,7 +221,7 @@ def main():
         )
         
         if user_file is not None:
-            file_content = user_file.read().decode('utf-8', errors="ignore")
+            file_content = user_file.read().decode('utf-8')
             with open(DOCS_FILE, 'w', encoding='utf-8') as f:
                 f.write(file_content)
             st.success("File uploaded!")
