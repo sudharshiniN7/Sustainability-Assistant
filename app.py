@@ -28,7 +28,7 @@ uploaded_file = st.file_uploader(
 document_text = ""
 
 if uploaded_file is not None:
-    document_text = uploaded_file.read().decode("utf-8")
+    document_text = uploaded_file.read().decode("utf-8",errors="ignore")
     st.success("Document uploaded successfully!")
 
 # -------- Layer 2: Document-based fallback --------
