@@ -1,4 +1,132 @@
 import streamlit as st
+if "theme" not in st.session_state:
+    st.session_state.theme = "Light"
+st.set_page_config(
+    page_title="ECOBOT",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+
+# ---------------- SIDEBAR SETTINGS ----------------
+with st.sidebar:
+    st.title("⚙️ ECOBOT Settings")
+
+    st.session_state.theme = st.radio(
+       "Choose Theme",
+       ["Light", "Dark"],
+       index=0 if st.session_state.theme == "Light" else 1
+    )
+
+
+    st.markdown("---")
+
+    st.markdown("### ℹ️ About")
+    st.write("ECOBOT is a sustainability learning assistant for students.")
+    st.write("Upload documents and ask questions from them.")
+
+    st.markdown("---")
+
+    if st.button("🗑️ Clear uploaded document"):
+        st.session_state.pop("document_text", None)
+        st.success("Document cleared!")
+
+st.markdown("""
+<style>
+
+/* REMOVE STREAMLIT WHITE HEADER SPACE */
+header {visibility: hidden;}
+.stApp {
+    margin-top: -80px;
+}
+
+/* ECOBOT TITLE */
+h1 {
+    color: #000000 !important;
+}
+
+/* SUBTITLE TEXT */
+div[data-testid="stMarkdown"] p {
+    color: #000000 !important;
+    font-weight: 500;
+}
+
+/* INPUT BOX TEXT */
+input {
+    color: #000000 !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+# =======================
+# ⚙️ SIDEBAR SETTINGS
+# =======================
+st.sidebar.title("⚙️ Settings")
+
+# Theme toggle
+theme = st.sidebar.radio(
+    "Theme",
+    ["Light 🌞", "Dark 🌙"],
+    index=0
+)
+
+# Confidence toggle
+show_confidence = st.sidebar.checkbox(
+    "Show confidence score",
+    value=True
+)
+
+# App info
+st.sidebar.markdown("---")
+st.sidebar.markdown("### ℹ️ About ECOBOT")
+st.sidebar.markdown("""
+ECOBOT is a sustainability learning assistant for students.
+
+**Features:**
+- Predefined sustainability knowledge  
+- Document upload & Q&A  
+- Confidence scoring  
+
+Built for academic submission 🎓
+""")
+
+# Reset button
+if st.sidebar.button("🔄 Clear uploaded document"):
+    if "document_text" in st.session_state:
+        del st.session_state["document_text"]
+    st.sidebar.success("Document cleared!")
+# =======================
+# 🎨 THEME STYLING
+# =======================
+if theme == "Dark 🌙":
+    st.markdown("""
+    <style>
+    .stApp {
+        background: linear-gradient(180deg, #0f2a30, #0a1f24);
+        color: white;
+    }
+    input, textarea {
+        background-color: #1e3a40 !important;
+        color: white !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+else:  # Light theme
+    st.markdown("""
+    <style>
+    .stApp {
+        background: linear-gradient(180deg, #e8f4ff, #f5fbff);
+        color: black;
+    }
+    input, textarea {
+        background-color: #ffffff !important;
+        color: black !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 st.set_page_config(
@@ -6,9 +134,11 @@ st.set_page_config(
     page_icon="🌱",
     layout="wide"
 )
-
 st.title("🌱 ECOBOT")
-st.write("Upload documents and ask sustainability questions.")
+st.markdown(
+    "<div class='subtitle'>Your sustainability learning companion 📘🌍</div>",
+    unsafe_allow_html=True
+)
 
 # Predefined sustainability knowledge (Layer 1)
 knowledge_base = {
@@ -18,14 +148,16 @@ knowledge_base = {
     "renewable energy": "Renewable energy comes from natural sources like sunlight, wind, and water that do not run out.",
     "recycling": "Recycling is the process of converting waste materials into new products to reduce pollution and save resources."
 }
-st.subheader("📄 Upload your document")
+st.markdown("<div class='card'>", unsafe_allow_html=True)
 
+st.subheader("📄 Upload your document")
 uploaded_file = st.file_uploader(
     "Upload a text file (.txt)",
     type=["txt"]
 )
 
-document_text = ""
+st.markdown("</div>", unsafe_allow_html=True)
+
 
 if uploaded_file is not None:
     document_text = uploaded_file.read().decode("utf-8",errors="ignore")
@@ -53,7 +185,12 @@ def search_documents(question, filepath="sustainability_docs.txt"):
     except FileNotFoundError:
         return None
 
-question = st.text_input("Ask your question:")
+st.markdown("<div class='card'>", unsafe_allow_html=True)
+
+question = st.text_input("💬 Ask your question:")
+
+st.markdown("</div>", unsafe_allow_html=True)
+
 
 if question:
     user_question = question.lower()
@@ -64,7 +201,8 @@ if question:
         if key in user_question:
             st.success("✅ Answer found (Predefined)")
             st.write(knowledge_base[key])
-            st.caption("📊 Confidence: 90%")
+            if show_confidence:
+               st.caption("📊 Confidence: 90%")
             found = True
             break
 
