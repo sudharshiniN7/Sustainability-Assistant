@@ -55,8 +55,6 @@ def search_documents(question, filepath="sustainability_docs.txt"):
 
 question = st.text_input("Ask your question:")
 
-question = st.text_input("Ask your question:")
-
 if question:
     user_question = question.lower()
     found = False
